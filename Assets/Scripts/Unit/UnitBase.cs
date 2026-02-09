@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Linq;
 using System.Collections.Generic;
+using Singleton;
 
 public class UnitBase : MonoBehaviour
 {
@@ -33,7 +34,7 @@ public class UnitBase : MonoBehaviour
         }
     }
 
-    protected void Start() {
+    protected virtual void Start() {
         //초기화
         stat.currHealth = stat.maxHealth;
         //생산이 완료되기 전까지는 비활성화
@@ -108,9 +109,14 @@ public class UnitBase : MonoBehaviour
           var unitList = (stat.owner == UnitOwner.Player ?
                           singleton.Instance.enemyUnitList :
                           singleton.Instacne.playerUnitList);
-           var target = unitList.Last();
-           float dist = Vector2.Distance(transform.position, target.transform.position);
-        return dist <= stat.attackRange ? target.GetComponent<UnitBase>() : null;
+         UnitBase target = null;
+           for(int i = unitList.Count - 1; i >= 0; i--) {
+               target = unitList[i];
+               float dist = Vector2.Distance(transform.position, target.transform.position);
+               if(dist <= stat.attackRange) {
+                   return target;
+               }
+           }
          */
         return null;
     }
@@ -133,6 +139,10 @@ public class UnitBase : MonoBehaviour
     protected void WhenDead() {
         //TODO : 사망 애니메이션 재생
         //애니메이션 재생 후 오브젝트 제거
+        var unitlist = (stat.owner == UnitStats.UnitOwner.Player ?
+                          GameManager.Instance.playerUnitList :
+                          GameManager.Instance.enemyUnitList);
+        unitlist.Remove(this);
         Destroy(gameObject, 1f);
     }
 
